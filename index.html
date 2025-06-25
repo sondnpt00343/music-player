@@ -24,7 +24,7 @@
                 <!-- Header -->
                 <header>
                     <h4>Now playing:</h4>
-                    <h2 class="playing-title">...</h2>
+                    <h2 class="current-song-title">...</h2>
                 </header>
 
                 <!-- CD -->
@@ -39,7 +39,7 @@
 
                 <!-- Control -->
                 <div class="control">
-                    <div class="btn btn-repeat">
+                    <div class="btn btn-loop">
                         <i class="fas fa-redo"></i>
                     </div>
                     <div class="btn btn-prev">
@@ -51,14 +51,13 @@
                     <div class="btn btn-next">
                         <i class="fas fa-step-forward"></i>
                     </div>
-                    <div class="btn btn-random">
+                    <div class="btn btn-shuffle">
                         <i class="fas fa-random"></i>
                     </div>
                 </div>
 
                 <input
-                    id="progress"
-                    class="progress"
+                    class="progress-bar"
                     type="range"
                     value="0"
                     step="1"
@@ -66,7 +65,7 @@
                     max="100"
                 />
 
-                <audio id="audio" src=""></audio>
+                <audio class="audio-player" src=""></audio>
             </div>
 
             <!-- Playlist -->

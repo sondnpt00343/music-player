@@ -4,17 +4,23 @@ const musicPlayer = {
     PREV_SONG: -1, // Quay lại bài trước
     PREV_RESET_TIME: 2, // Thời gian tối thiểu (giây) để reset bài hiện tại thay vì chuyển bài trước
 
+    // Hằng số localStorage keys
+    STORAGE_KEYS: {
+        LOOP_MODE: "musicPlayer_loopMode", // Key lưu trạng thái chế độ lặp lại
+        SHUFFLE_MODE: "musicPlayer_shuffleMode", // Key lưu trạng thái chế độ phát ngẫu nhiên
+    },
+
     // Các element DOM - lấy từ HTML
     playlistContainer: document.querySelector(".playlist"), // Container chứa danh sách bài hát
     playToggleBtn: document.querySelector(".btn-toggle-play"), // Nút play/pause chính
-    currentSongTitle: document.querySelector(".playing-title"), // Hiển thị tên bài đang phát
-    audioPlayer: document.querySelector("audio"), // Element audio HTML5
+    currentSongTitle: document.querySelector(".current-song-title"), // Hiển thị tên bài đang phát
+    audioPlayer: document.querySelector(".audio-player"), // Element audio HTML5
     playIcon: document.querySelector(".play-icon"), // Icon play/pause
     prevBtn: document.querySelector(".btn-prev"), // Nút bài trước
     nextBtn: document.querySelector(".btn-next"), // Nút bài kế tiếp
-    loopBtn: document.querySelector(".btn-repeat"), // Nút lặp lại
-    shuffleBtn: document.querySelector(".btn-random"), // Nút phát ngẫu nhiên
-    progressBar: document.querySelector("#progress"), // Thanh tiến trình
+    loopBtn: document.querySelector(".btn-loop"), // Nút lặp lại
+    shuffleBtn: document.querySelector(".btn-shuffle"), // Nút phát ngẫu nhiên
+    progressBar: document.querySelector(".progress-bar"), // Thanh tiến trình
 
     // Danh sách bài hát
     songList: [
@@ -53,11 +59,14 @@ const musicPlayer = {
     // Trạng thái của player
     currentSongIndex: 0, // Chỉ số bài hát hiện tại trong mảng
     isPlaying: false, // Trạng thái đang phát hay không
-    isLoopMode: localStorage.getItem("loop") === "true", // Chế độ lặp lại (lưu trong localStorage)
-    isShuffleMode: localStorage.getItem("random") === "true", // Chế độ phát ngẫu nhiên (lưu trong localStorage)
+    isLoopMode: false, // Chế độ lặp lại (sẽ được load từ localStorage)
+    isShuffleMode: false, // Chế độ phát ngẫu nhiên (sẽ được load từ localStorage)
 
     // Hàm khởi tạo - được gọi đầu tiên để thiết lập player
     initialize() {
+        // Load trạng thái từ localStorage
+        this.loadPlayerState();
+
         // Render danh sách bài hát lần đầu
         this.renderPlaylist();
         // Thiết lập bài hát đầu tiên
@@ -65,6 +74,14 @@ const musicPlayer = {
 
         // Thiết lập các sự kiện DOM
         this.setupEventListeners();
+    },
+
+    // Load trạng thái player từ localStorage
+    loadPlayerState() {
+        this.isLoopMode =
+            localStorage.getItem(this.STORAGE_KEYS.LOOP_MODE) === "true";
+        this.isShuffleMode =
+            localStorage.getItem(this.STORAGE_KEYS.SHUFFLE_MODE) === "true";
     },
 
     // Thiết lập tất cả các sự kiện click, change cho các element
@@ -104,7 +121,7 @@ const musicPlayer = {
             this.isLoopMode = !this.isLoopMode;
             this.updateLoopButtonState();
             // Lưu trạng thái vào localStorage để giữ khi reload trang
-            localStorage.setItem("loop", this.isLoopMode);
+            localStorage.setItem(this.STORAGE_KEYS.LOOP_MODE, this.isLoopMode);
         };
 
         // Sự kiện toggle chế độ phát ngẫu nhiên
@@ -112,7 +129,10 @@ const musicPlayer = {
             this.isShuffleMode = !this.isShuffleMode;
             this.updateShuffleButtonState();
             // Lưu trạng thái vào localStorage để giữ khi reload trang
-            localStorage.setItem("random", this.isShuffleMode);
+            localStorage.setItem(
+                this.STORAGE_KEYS.SHUFFLE_MODE,
+                this.isShuffleMode
+            );
         };
 
         // Sự kiện cập nhật thanh tiến trình khi audio đang phát
@@ -149,7 +169,9 @@ const musicPlayer = {
 
     // Xử lý điều hướng bài hát (trước/sau)
     handleSongNavigation(direction) {
+        // Luôn phát khi chuyển bài dù trước đó đang pause
         this.isPlaying = true;
+
         const shouldResetCurrentSong =
             this.audioPlayer.currentTime > this.PREV_RESET_TIME;
 
@@ -174,8 +196,8 @@ const musicPlayer = {
 
     // Tạo chỉ số ngẫu nhiên cho bài hát (không trùng với bài hiện tại)
     getRandomSongIndex() {
-        // Nếu chỉ có 1 bài thì không cần random
-        if (this.songList.length === 1) {
+        // Nếu chỉ có <= 1 bài thì không cần random
+        if (this.songList.length <= 1) {
             return this.currentSongIndex;
         }
 
@@ -263,8 +285,8 @@ const musicPlayer = {
                         "
                     ></div>
                     <div class="body">
-                        <h3 class="title">${song.title}</h3>
-                        <p class="author">${song.artist}</p>
+                        <h3 class="title">${this.escapeHTML(song.title)}</h3>
+                        <p class="author">${this.escapeHTML(song.artist)}</p>
                     </div>
                     <div class="option">
                         <i class="fas fa-ellipsis-h"></i>
@@ -275,6 +297,19 @@ const musicPlayer = {
 
         // Cập nhật HTML của playlist
         this.playlistContainer.innerHTML = playlistHTML;
+    },
+
+    escapeHTML(html) {
+        // Kiểm tra input có hợp lệ không
+        if (typeof html !== "string") {
+            return "";
+        }
+
+        // Tạo một temporary div element để sử dụng textContent
+        // textContent tự động escape các ký tự đặc biệt
+        const tempDiv = document.createElement("div");
+        tempDiv.textContent = html;
+        return tempDiv.innerHTML;
     },
 };
 

@@ -96,7 +96,7 @@ header h2 {
     background-color: var(--primary-color);
 }
 
-.progress {
+.progress-bar {
     width: 100%;
     appearance: none;
     height: 6px;
@@ -107,7 +107,7 @@ header h2 {
     transition: opacity 0.2s;
 }
 
-.progress::-webkit-slider-thumb {
+.progress-bar::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 12px;
